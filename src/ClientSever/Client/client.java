@@ -1,4 +1,4 @@
 package ClientSever.Client;
 
-public class sever {
+public class client {
 }
