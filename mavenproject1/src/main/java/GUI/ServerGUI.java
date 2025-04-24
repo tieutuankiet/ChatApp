@@ -2,7 +2,7 @@ package GUI;
 
 import javax.swing.*;
 import java.awt.*;
-import Server.Server; // Nhập lớp Server từ package Server
+import Server.Server;
 
 public class ServerGUI extends JFrame {
     private JTextField txtId;
@@ -59,15 +59,35 @@ public class ServerGUI extends JFrame {
     }
 
     private void openPortAction() {
-        String id = txtId.getText();
-        String port = txtPort.getText();
+        String id = txtId.getText().trim();
+        String port = txtPort.getText().trim();
 
-        // Gọi phương thức mở port từ lớp Server
+        // Kiểm tra xem ID và Port có được nhập đầy đủ không
+        if (id.isEmpty() || port.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ ID và Port.");
+            return;
+        }
+
+        // Kiểm tra số Port có hợp lệ không
+        int portNum;
+        try {
+            portNum = Integer.parseInt(port);
+            if (portNum < 1 || portNum > 65535) {
+                throw new NumberFormatException("Port phải nằm trong khoảng 1 đến 65535.");
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Số Port không hợp lệ: " + e.getMessage());
+            return;
+        }
+
+        // Gọi phương thức mở Port từ lớp Server
         String message = server.openPort(id, port);
         JOptionPane.showMessageDialog(this, message);
         
-        // Đóng giao diện sau khi hiển thị thông báo
-        dispose(); // Đóng cửa sổ
+        // Chỉ đóng cửa sổ nếu thành công
+        if (message.contains("đã mở")) {
+            dispose();
+        }
     }
 
     public static void main(String[] args) {
