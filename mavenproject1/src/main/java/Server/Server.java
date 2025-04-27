@@ -7,15 +7,26 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import Client.ClientHandler;
+import GUI.ServerGUI;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Server {
     private static final int N_THREADS = 10;
     private ServerSocket serverSocket;
     private ExecutorService executorService;
+    private Map<String, String> userCredentials; // Danh sách tên đăng nhập và mật khẩu
 
     public Server() {
         executorService = Executors.newFixedThreadPool(N_THREADS);
-        //System.out.println("ThreadPool Server đang khởi tạo với " + N_THREADS + " thread...");
+        userCredentials = new HashMap<>();
+        initializeCredentials(); // Khởi tạo thông tin đăng nhập
+    }
+
+    private void initializeCredentials() {
+        // Thêm thông tin đăng nhập (username: password)
+        userCredentials.put("admin", "password123");
+        userCredentials.put("user", "pass456");
     }
 
     public String openPort(String id, String portStr) {
@@ -35,12 +46,8 @@ public class Server {
             }
 
             serverSocket = new ServerSocket(port);
-          //  System.out.println("Server với ID: " + id + " đang lắng nghe trên cổng " + port + "...");
-
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-          //      System.out.println("Đang shutdown ExecutorService...");
                 shutdownExecutor(executorService);
-           //     System.out.println("ExecutorService đã shutdown.");
             }));
 
             listenForClients();
@@ -54,18 +61,13 @@ public class Server {
         new Thread(() -> {
             while (!executorService.isShutdown()) {
                 try {
-                    //System.out.println("Đang chờ client kết nối...");
                     Socket clientSocket = serverSocket.accept();
-                    //System.out.println("Client mới đã kết nối: " + clientSocket.getInetAddress().getHostAddress());
-
-                    ClientHandler clientHandler = new ClientHandler(clientSocket);
+                    ClientHandler clientHandler = new ClientHandler(clientSocket, userCredentials);
                     executorService.execute(clientHandler);
                 } catch (IOException e) {
                     if (executorService.isShutdown()) {
-                       // System.out.println("Server socket đã đóng do executor shutdown.");
                         break;
                     }
-                    //System.err.println("Lỗi khi chấp nhận kết nối client: " + e.getMessage());
                 }
             }
         }).start();
@@ -77,12 +79,17 @@ public class Server {
             if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
                 executor.shutdownNow();
                 if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
-                   // System.err.println("ExecutorService không thể dừng hẳn.");
                 }
             }
         } catch (InterruptedException ie) {
             executor.shutdownNow();
             Thread.currentThread().interrupt();
         }
+    }
+
+    public static void main(String[] args) {
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            new ServerGUI().setVisible(true);
+        });
     }
 }

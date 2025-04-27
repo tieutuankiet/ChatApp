@@ -3,6 +3,8 @@ package GUI;
 import javax.swing.*;
 import java.awt.*;
 import Server.Server;
+import Server.Server;
+import Server.Server;
 
 public class ServerGUI extends JFrame {
     private JTextField txtId;

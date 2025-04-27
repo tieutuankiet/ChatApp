@@ -3,7 +3,10 @@ package GUI;
 import javax.swing.*;
 
 public class Login extends javax.swing.JFrame {
-    public Login() {
+    private LoginListener listener;
+
+    public Login(LoginListener listener) {
+        this.listener = listener;
         initComponents();
     }
 
@@ -20,7 +23,13 @@ public class Login extends javax.swing.JFrame {
         JButton btnLogin = new JButton("Đăng nhập");
         JButton btnRegister = new JButton("Đăng ký");
 
-        btnLogin.addActionListener(evt -> loginAction());
+        btnLogin.addActionListener(evt -> {
+            String username = txtUsername.getText();
+            String password = new String(txtPassword.getPassword());
+            String ip = txtIp.getText();
+            String port = txtPort.getText();
+            listener.onLogin(username, password, ip, port);
+        });
         btnRegister.addActionListener(evt -> openRegisterForm());
 
         GroupLayout layout = new GroupLayout(getContentPane());
@@ -67,16 +76,15 @@ public class Login extends javax.swing.JFrame {
         setLocationRelativeTo(null); // Center the form
     }
 
-    private void loginAction() {
-        // Thêm mã xử lý đăng nhập ở đây
-        JOptionPane.showMessageDialog(this, "Đăng nhập thành công!");
-    }
-
     private void openRegisterForm() {
         new Register().setVisible(true); // Mở form đăng ký
     }
 
+    public interface LoginListener {
+        void onLogin(String username, String password, String ip, String port);
+    }
+
     public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(() -> new Login().setVisible(true));
+        java.awt.EventQueue.invokeLater(() -> new Login(null).setVisible(true));
     }
 }
